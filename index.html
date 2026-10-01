@@ -69,9 +69,12 @@ code,pre,.mono{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.86
 
 /* hero */
 .hero{padding-top:72px;padding-bottom:56px;text-align:center}
-.venue{display:inline-block;max-width:100%;font:600 .8rem/1.4 Inter,sans-serif;color:var(--accent);background:var(--accent-soft);padding:.45rem .9rem;border-radius:999px;margin-bottom:1.5rem;text-decoration:none;border:1px solid transparent}
+.venue{display:inline-flex;flex-direction:column;align-items:center;gap:4px;max-width:100%;color:var(--accent);background:var(--accent-soft);padding:.75rem 1.4rem;border-radius:14px;margin-bottom:1.75rem;text-decoration:none;border:1px solid transparent;font-family:Inter,sans-serif}
 .venue:hover{border-color:var(--accent)}
-.venue .ext{display:inline-block;margin-left:4px;opacity:.7}
+.venue .v1{font-weight:700;font-size:1.05rem;line-height:1.3}
+.venue .v2{font-weight:500;font-size:.98rem;line-height:1.4}
+.venue .ext{display:inline-block;margin-left:5px;opacity:.7}
+.cal{font-family:"Cambria Math","STIX Two Math","Latin Modern Math",serif;font-size:1.08em}
 .hero h1{font-size:clamp(2rem,5vw,3.1rem);margin:0 auto 1.25rem;max-width:18ch}
 .authors{color:var(--ink-2);margin-bottom:1.75rem}
 .authors .names{font-size:1.08rem;color:var(--ink);font-weight:500}
@@ -114,7 +117,7 @@ code,pre,.mono{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.86
 .tf-p.int .mtr .tr{background:color-mix(in srgb,var(--surface) 70%,transparent)}
 .mtr .fl{height:100%;border-radius:3px;transition:width .45s ease}
 .mtr.sp .fl{background:var(--c-arc)} .mtr.rh .fl{background:var(--c-z)}
-.tf-ar{display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--ink-3);font-size:.8rem;transition:opacity .2s}
+.tf-ar{display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--ink-2);font-size:1.05rem;transition:opacity .2s}
 .tf-ar svg{width:28px;height:12px}
 .tf-ar.off{opacity:.25}
 .tf-cap{font-size:.84rem;color:var(--ink-2);margin:14px 0 0}
@@ -204,7 +207,9 @@ footer{border-top:1px solid var(--rule);padding:32px 0 48px;color:var(--ink-3);f
 .aside-note{font-size:.84rem;color:var(--ink-3);border-left:2px solid var(--rule);padding-left:12px;margin:0 0 1rem;max-width:720px}
 
 @media (max-width:760px){
-  .venue{border-radius:12px;font-size:.74rem}
+  .venue{padding:.65rem 1rem}
+  .venue .v1{font-size:.98rem}
+  .venue .v2{font-size:.86rem}
   section{padding:48px 0}
   .grid3{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -16px;padding:0 16px 8px;scrollbar-width:none}
   .grid3::-webkit-scrollbar{display:none}
@@ -253,7 +258,10 @@ footer{border-top:1px solid var(--rule);padding:32px 0 48px;color:var(--ink-3);f
 <main>
 <!-- ============ HERO ============ -->
 <div class="wrap hero">
-  <a class="venue" href="https://bento-neurips.github.io/" target="_blank" rel="noopener">NeurIPS 2026 Workshop · BeNTo: Beyond Next-Token Prediction — Diffusion &amp; Flow Models for Next-Generation Decoding<span class="ext" aria-hidden="true">↗</span></a>
+  <a class="venue" href="https://bento-neurips.github.io/" target="_blank" rel="noopener">
+    <span class="v1">BeNTo Workshop @ NeurIPS 2026<span class="ext" aria-hidden="true">↗</span></span>
+    <span class="v2">Beyond Next-Token Prediction — Diffusion &amp; Flow Models for Next-Generation Decoding</span>
+  </a>
   <h1>Which Geometry Predicts Few-Step Degradation in Latent Flow Matching?</h1>
   <div class="authors">
     <div class="names">Mohamed Aziz Khadraoui<sup>1</sup> &nbsp;·&nbsp; Abdelkader Baggag<sup>2</sup></div>
@@ -310,8 +318,8 @@ footer{border-top:1px solid var(--rule);padding:32px 0 48px;color:var(--ink-3);f
     <div class="prose">
       <p>Flow matching with a linear interpolant prescribes straight <em>conditional</em> paths. The
       trajectory the learned field actually generates need not be straight, and in a latent model it is
-      transformed twice before anyone looks at it. <span class="mono">D<sub>φ</sub></span> is a frozen
-      convolutional autoencoder's decoder. <span class="mono">K</span> is the deterministic kinematic map
+      transformed twice before anyone looks at it. <span class="cal">𝒟<sub>φ</sub></span> is a frozen
+      convolutional autoencoder's decoder. <span class="cal">𝒦</span> is the deterministic kinematic map
       (root integration and root-relative reconstruction).</p>
       <p><b>CDFM is the control.</b> It integrates directly in 𝒳, so any 𝒳&nbsp;→&nbsp;𝒬 effect it
       shows comes from the kinematic map alone, with no autoencoder involved.</p>
@@ -699,15 +707,15 @@ document.getElementById('copyBib').addEventListener('click',e=>{
   const M={
     lfm:[
       {sym:'𝒵',nm:'latent',int:true,shape:'calm',sd:.0052,rho:.413},
-      {arrow:'D<sub>φ</sub>'},
+      {arrow:'<span class="cal">𝒟<sub>φ</sub></span>'},
       {sym:'𝒳',nm:'decoded motion',shape:'mid',sd:.0928,rho:.089},
-      {arrow:'K'},
+      {arrow:'<span class="cal">𝒦</span>'},
       {sym:'𝒬',nm:'Cartesian',shape:'wild',sd:.5526,rho:-.024}],
     cdfm:[
       {sym:'𝒵',nm:'latent',off:true},
-      {arrow:'D<sub>φ</sub>',off:true},
+      {arrow:'<span class="cal">𝒟<sub>φ</sub></span>',off:true},
       {sym:'𝒳',nm:'motion',int:true,shape:'calm',sd:.0034,rho:.559},
-      {arrow:'K'},
+      {arrow:'<span class="cal">𝒦</span>'},
       {sym:'𝒬',nm:'Cartesian',shape:'wild2',sd:.3211,rho:.373}]
   };
   function rng(seed){return()=>{seed=(seed*16807)%2147483647;return(seed-1)/2147483646}}
