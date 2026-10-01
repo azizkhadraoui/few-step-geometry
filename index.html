@@ -86,9 +86,6 @@ code,pre,.mono{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.86
 .btn{display:inline-flex;align-items:center;gap:8px;padding:.6rem 1.05rem;border-radius:10px;background:var(--ink);color:var(--bg);text-decoration:none;font-weight:500;font-size:.925rem;border:1px solid var(--ink)}
 .btn.ghost{background:transparent;color:var(--ink);border-color:var(--rule)}
 .btn:hover{opacity:.88}
-.btn.disabled{opacity:.5;cursor:default}
-.btn.disabled:hover{opacity:.5}
-.btn small{font-size:.78em;color:var(--ink-3)}
 .btn svg{width:16px;height:16px}
 .tldr{max-width:760px;margin:2.75rem auto 0;text-align:left;background:var(--surface);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:10px;padding:1.1rem 1.35rem;box-shadow:var(--shadow)}
 .tldr b{font-family:"Source Serif 4",serif}
@@ -274,9 +271,8 @@ footer{border-top:1px solid var(--rule);padding:32px 0 48px;color:var(--ink-3);f
   <div class="buttons">
     <a class="btn" href="https://openreview.net/pdf?id=K0bixbUbER" target="_blank" rel="noopener">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>Paper</a>
-    <!-- TODO: swap this span for <a class="btn ghost" href="REPO_URL"> once the repository is public -->
-    <span class="btn ghost disabled" aria-disabled="true" title="Code release coming soon">
-      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.53-1.33-1.28-1.69-1.28-1.69-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.68 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.41-2.69 5.39-5.26 5.67.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>Code <small>(soon)</small></span>
+    <a class="btn ghost" href="https://github.com/azizkhadraoui/few-step-geometry-code" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.53-1.33-1.28-1.69-1.28-1.69-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.68 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.41-2.69 5.39-5.26 5.67.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>Code</a>
     <a class="btn ghost" href="https://openreview.net/forum?id=K0bixbUbER" target="_blank" rel="noopener">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>OpenReview</a>
     <a class="btn ghost" href="#citation">
@@ -567,37 +563,43 @@ footer{border-top:1px solid var(--rule);padding:32px 0 48px;color:var(--ink-3);f
   <div class="wrap">
     <div class="eyebrow">Code</div>
     <h2>Reproduce every table and figure</h2>
+    <p class="prose">All code is in <a href="https://github.com/azizkhadraoui/few-step-geometry-code">azizkhadraoui/few-step-geometry-code</a>.
+    Everything except reflow training runs inference-only on frozen checkpoints, on a single 16&nbsp;GB V100.</p>
     <div class="two">
       <div>
-        <p>Python <b>3.11</b> is required (3.13 has no wheels for several dependencies). Every measurement
-        runs inference-only on frozen checkpoints, on a single V100.</p>
-<pre><code>conda create -n mfg python=3.11 -y
-conda activate mfg
-pip install torch==2.5.1 \
-  --index-url https://download.pytorch.org/whl/cu121
+<pre><code>git clone https://github.com/azizkhadraoui/few-step-geometry-code
+cd few-step-geometry-code
 pip install -r requirements.txt
 
 export HML3D_ROOT=/path/to/HumanML3D/humanml
 export RVQ_CKPT=/path/to/rvq_vae_best.pt
+export EVAL_ROOT=/path/to/evaluator
 export WORK_DIR=./runs
-export EVAL_N=512</code></pre>
+
+# train the two base models once
+VARIANT=latent python lfm_clfm_cdfm_experiment.py
+VARIANT=direct python lfm_clfm_cdfm_experiment.py
+
+# then run a measurement
+CV_REPS=5 EVAL_N=512 python curvature_nfe_v2.py</code></pre>
       </div>
       <div>
         <div class="tbl-wrap" style="margin-top:0">
           <table class="tbl">
-            <thead><tr><th>Paper item</th><th class="l">Script (<code>experiments/</code>)</th></tr></thead>
+            <thead><tr><th>Measures</th><th class="l">Script</th></tr></thead>
             <tbody>
-              <tr><td>Table 1</td><td class="l"><code>three_space_geometry.py</code></td></tr>
-              <tr><td>Figure 1</td><td class="l"><code>curvature_nfe_v2.py</code></td></tr>
-              <tr><td>Table 2</td><td class="l"><code>gain_disentangle.py</code></td></tr>
-              <tr><td>§7 schedules</td><td class="l"><code>curvature_schedule.py</code></td></tr>
-              <tr><td>Table 3, Fig. 2</td><td class="l"><code>guidance_control.py</code></td></tr>
-              <tr><td>Reflow training</td><td class="l"><code>reflow_experiment.py</code></td></tr>
+              <tr><td>Geometry in 𝒵, 𝒳, 𝒬</td><td class="l"><code>three_space_geometry.py</code></td></tr>
+              <tr><td>Predictors &amp; degradation</td><td class="l"><code>curvature_nfe_v2.py</code></td></tr>
+              <tr><td>Gain controls</td><td class="l"><code>gain_disentangle.py</code></td></tr>
+              <tr><td>Step schedules</td><td class="l"><code>curvature_schedule.py</code></td></tr>
+              <tr><td>Reflow student</td><td class="l"><code>reflow_experiment.py</code></td></tr>
+              <tr><td>Guidance vs. reflow</td><td class="l"><code>guidance_control.py</code></td></tr>
             </tbody>
           </table>
         </div>
-        <p class="small muted">Figures are rendered with <code>figures/make_figs.py</code>. Slurm wrappers live in
-        <code>scripts/</code>. Typical runtimes at 512 clips are 15–50 minutes per experiment.</p>
+        <p class="small muted">Each script writes a JSON to <code>$WORK_DIR</code>. Slurm launchers are in <code>slurm/</code>:
+        set the paths once in <code>slurm/env.sh</code>, then <code>sbatch slurm/run_*.sh</code>. The repository README
+        maps every reported number to the function that produces it.</p>
       </div>
     </div>
 

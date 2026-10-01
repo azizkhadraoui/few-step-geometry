@@ -4,6 +4,6 @@ Project page for the paper at the NeurIPS 2026 workshop [BeNTo: Beyond Next-Toke
 
 - **Page:** https://azizkhadraoui.github.io/few-step-geometry/
 - **Paper & reviews:** [OpenReview](https://openreview.net/forum?id=K0bixbUbER)
-- **Code:** coming soon
+- **Code:** [azizkhadraoui/few-step-geometry-code](https://github.com/azizkhadraoui/few-step-geometry-code)
 
 The site is a single static `index.html` with no build step; GitHub Pages serves it from the root of `main`.
