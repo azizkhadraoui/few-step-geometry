@@ -1,0 +1,909 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Few-Step Geometry</title>
+<meta name="description" content="Which Geometry Predicts Few-Step Degradation in Latent Flow Matching? Only the integration-space geometry predicts few-step degradation; downstream maps contribute through local sensitivity. BeNTo @ NeurIPS 2026.">
+<meta property="og:title" content="Which Geometry Predicts Few-Step Degradation in Latent Flow Matching?">
+<meta property="og:description" content="Only the integration-space geometry predicts few-step degradation. Downstream maps bend the trajectory but carry no signal — their local sensitivity does.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231f509a'/%3E%3Cpath d='M6 24 C12 22 14 10 26 8' stroke='white' stroke-width='3' fill='none' stroke-linecap='round'/%3E%3Ccircle cx='6' cy='24' r='2.6' fill='white'/%3E%3Ccircle cx='26' cy='8' r='2.6' fill='white'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+<style>
+:root{
+  --bg:#fbfaf7; --surface:#ffffff; --surface-2:#f3f1ec; --ink:#1b1d22; --ink-2:#4a4f59; --ink-3:#7a808c;
+  --rule:#e3e0d8; --accent:#1f509a; --accent-soft:#e6edf7;
+  --c-z:#1f509a; --c-turn:#007777; --c-arc:#ca6c02; --c-vel:#737373; --c-q:#a51d2d; --c-gain:#54428e;
+  --good:#1f7a4d; --warn:#a15c00;
+  --grid:#e9e6df; --shadow:0 1px 2px rgba(20,20,30,.05),0 6px 24px rgba(20,20,30,.05);
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#121418; --surface:#191c22; --surface-2:#20242b; --ink:#e8e6e1; --ink-2:#b4b8c0; --ink-3:#868c97;
+    --rule:#2c3038; --accent:#7ea6e6; --accent-soft:#1e2a3d;
+    --c-z:#7ea6e6; --c-turn:#3fbcb4; --c-arc:#f0a04b; --c-vel:#a3a3a3; --c-q:#ef6f7c; --c-gain:#a998e0;
+    --good:#5cc592; --warn:#e3a44f;
+    --grid:#262a31; --shadow:none; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121418; --surface:#191c22; --surface-2:#20242b; --ink:#e8e6e1; --ink-2:#b4b8c0; --ink-3:#868c97;
+  --rule:#2c3038; --accent:#7ea6e6; --accent-soft:#1e2a3d;
+  --c-z:#7ea6e6; --c-turn:#3fbcb4; --c-arc:#f0a04b; --c-vel:#a3a3a3; --c-q:#ef6f7c; --c-gain:#a998e0;
+  --good:#5cc592; --warn:#e3a44f;
+  --grid:#262a31; --shadow:none; color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--accent);text-decoration-thickness:1px;text-underline-offset:2px}
+.wrap{max-width:960px;margin:0 auto;padding:0 16px}
+.prose{max-width:720px}
+h1,h2,h3{font-family:"Source Serif 4",Georgia,serif;font-weight:700;letter-spacing:-.01em;line-height:1.2}
+h2{font-size:1.75rem;margin:0 0 .75rem}
+h3{font-size:1.2rem;margin:2rem 0 .5rem}
+p{margin:0 0 1rem}
+.eyebrow{font:600 .75rem/1 Inter,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:.75rem}
+section{padding:64px 0;border-top:1px solid var(--rule)}
+code,pre,.mono{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.86em}
+:not(pre)>code{background:var(--surface-2);padding:.1em .35em;border-radius:4px}
+.muted{color:var(--ink-2)}
+.small{font-size:.875rem}
+
+/* top bar */
+.topbar{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--rule)}
+.topbar .wrap{display:flex;align-items:center;gap:20px;height:52px}
+.topbar nav{display:flex;gap:18px;overflow-x:auto;scrollbar-width:none;flex:1}
+.topbar nav::-webkit-scrollbar{display:none}
+.topbar nav a{color:var(--ink-2);text-decoration:none;font-size:.875rem;white-space:nowrap}
+.topbar nav a:hover{color:var(--ink)}
+.theme-btn{border:1px solid var(--rule);background:var(--surface);color:var(--ink-2);border-radius:8px;width:34px;height:34px;cursor:pointer;display:grid;place-items:center;flex:none}
+
+/* hero */
+.hero{padding-top:72px;padding-bottom:56px;text-align:center}
+.venue{display:inline-block;font:600 .8rem/1 Inter,sans-serif;color:var(--accent);background:var(--accent-soft);padding:.45rem .8rem;border-radius:999px;margin-bottom:1.5rem}
+.hero h1{font-size:clamp(2rem,5vw,3.1rem);margin:0 auto 1.25rem;max-width:18ch}
+.authors{color:var(--ink-2);margin-bottom:1.75rem}
+.buttons{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:.6rem 1.05rem;border-radius:10px;background:var(--ink);color:var(--bg);text-decoration:none;font-weight:500;font-size:.925rem;border:1px solid var(--ink)}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--rule)}
+.btn:hover{opacity:.88}
+.btn.disabled{opacity:.5;cursor:default}
+.btn.disabled:hover{opacity:.5}
+.btn small{font-size:.78em;color:var(--ink-3)}
+.btn svg{width:16px;height:16px}
+.tldr{max-width:760px;margin:2.75rem auto 0;text-align:left;background:var(--surface);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:10px;padding:1.1rem 1.35rem;box-shadow:var(--shadow)}
+.tldr b{font-family:"Source Serif 4",serif}
+
+/* pipeline */
+.tf{margin:2rem 0 .5rem;background:var(--surface);border:1px solid var(--rule);border-radius:14px;padding:18px;box-shadow:var(--shadow)}
+.tf-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.seg{display:inline-flex;background:var(--surface-2);border-radius:9px;padding:3px}
+.seg button{border:0;background:none;font:600 .82rem Inter,sans-serif;color:var(--ink-2);padding:.4rem .9rem;border-radius:7px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.tf-key{font-size:.78rem;color:var(--ink-3);display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.tf-key i{display:inline-block;width:16px;border-top:2px solid var(--ink-3);vertical-align:middle;margin-right:5px}
+.tf-key i.eu{border-top:2px dashed var(--accent)}
+.tf-grid{display:grid;grid-template-columns:1fr 40px 1fr 40px 1fr;align-items:stretch}
+.tf-p{border:1px solid var(--rule);border-radius:11px;padding:10px 10px 12px;background:var(--bg);display:flex;flex-direction:column;transition:opacity .2s}
+.tf-p.int{border:1.5px solid var(--accent);background:var(--accent-soft)}
+.tf-p.off{opacity:.35}
+.tf-t{display:flex;align-items:baseline;gap:6px;min-height:22px}
+.tf-t .sym{font:700 1.3rem/1 "Source Serif 4",serif}
+.tf-t .nm{font-size:.74rem;color:var(--ink-3)}
+.tf-t .badge{margin-left:auto;font:600 .6rem/1 Inter,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--bg);background:var(--accent);padding:3px 6px;border-radius:4px;white-space:nowrap}
+.tf-svg{width:100%;height:auto;display:block;margin:6px 0 8px}
+.tf-off{display:grid;place-items:center;aspect-ratio:200/120;font-size:.78rem;color:var(--ink-3);text-align:center;padding:0 10px;margin:6px 0 8px}
+.mtr{margin-top:6px}
+.mtr .ml{display:flex;justify-content:space-between;font-size:.72rem;color:var(--ink-2)}
+.mtr .ml b{font:500 .74rem "JetBrains Mono",monospace;color:var(--ink)}
+.mtr .tr{height:6px;background:var(--surface-2);border-radius:3px;margin-top:3px;overflow:hidden}
+.tf-p.int .mtr .tr{background:color-mix(in srgb,var(--surface) 70%,transparent)}
+.mtr .fl{height:100%;border-radius:3px;transition:width .45s ease}
+.mtr.sp .fl{background:var(--c-arc)} .mtr.rh .fl{background:var(--c-z)}
+.tf-ar{display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--ink-3);font-size:.8rem;transition:opacity .2s}
+.tf-ar svg{width:28px;height:12px}
+.tf-ar.off{opacity:.25}
+.tf-cap{font-size:.84rem;color:var(--ink-2);margin:14px 0 0}
+
+/* math block */
+.eq{background:var(--surface);border:1px solid var(--rule);border-radius:12px;padding:6px 16px;overflow-x:auto;margin:1.25rem 0}
+.eq-notes{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px}
+.eq-note{border-top:3px solid var(--rule);padding-top:8px;font-size:.875rem;color:var(--ink-2)}
+.eq-note b{display:block;color:var(--ink);font-weight:600;margin-bottom:2px}
+.eq-note.a{border-color:var(--c-gain)} .eq-note.b{border-color:var(--c-z)} .eq-note.c{border-color:var(--c-q)}
+
+/* findings */
+.finding{display:grid;grid-template-columns:44px 1fr;gap:6px 16px;margin-top:3rem}
+.finding:first-of-type{margin-top:1.5rem}
+.num{font:700 1.1rem/1 "Source Serif 4",serif;color:var(--accent);border:1.5px solid var(--accent);width:36px;height:36px;border-radius:50%;display:grid;place-items:center;margin-top:2px}
+.finding h3{margin:0 0 .5rem;font-size:1.4rem}
+.finding .body{min-width:0}
+
+.card{background:var(--surface);border:1px solid var(--rule);border-radius:14px;padding:18px;box-shadow:var(--shadow);margin:1.25rem 0}
+.card .cap{font-size:.84rem;color:var(--ink-2);margin:.75rem 0 0}
+.panels{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.panel-title{font:600 .82rem/1.3 Inter,sans-serif;color:var(--ink);margin:0 0 4px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:12px;font-size:.8rem;color:var(--ink-2)}
+.legend span{display:inline-flex;align-items:center;gap:6px;cursor:default}
+.legend i{display:inline-block;width:18px;height:0;border-top:2.5px solid currentColor}
+.legend i.dash{border-top-style:dashed}
+svg.chart{width:100%;height:auto;display:block;overflow:visible}
+svg.chart text{font-family:Inter,sans-serif;fill:var(--ink-3)}
+.dim{opacity:.12;transition:opacity .15s}
+.series{transition:opacity .15s}
+
+.tbl{width:100%;border-collapse:collapse;font-size:.875rem}
+.tbl-wrap{overflow-x:auto;margin:1rem 0}
+.tbl th,.tbl td{padding:.5rem .7rem;text-align:right;border-bottom:1px solid var(--rule);white-space:nowrap}
+.tbl th:first-child,.tbl td:first-child,.tbl th.l,.tbl td.l{text-align:left}
+.tbl th{font-weight:600;color:var(--ink-2);font-size:.78rem;text-transform:uppercase;letter-spacing:.04em}
+.tbl td.n{font-family:"JetBrains Mono",monospace;font-size:.82rem}
+.tbl tr.hl td{background:var(--accent-soft)}
+.tbl .best{font-weight:700;color:var(--ink)}
+.tbl .grp td{border-bottom:0;padding-bottom:0}
+
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:1.25rem 0}
+.stat{background:var(--surface);border:1px solid var(--rule);border-radius:12px;padding:14px 16px}
+.stat .v{font:700 1.9rem/1.1 "Source Serif 4",serif;color:var(--ink)}
+.stat .v small{font-size:1rem;color:var(--ink-3);font-weight:400}
+.stat .k{font-size:.8rem;color:var(--ink-2);margin-top:4px}
+
+.callout{border-radius:10px;padding:.9rem 1.1rem;margin:1.25rem 0;font-size:.925rem;background:var(--surface-2);border-left:3px solid var(--ink-3)}
+.callout.warn{border-left-color:var(--warn)}
+.callout b{color:var(--ink)}
+
+.two{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start}
+
+/* reproduce */
+pre{background:var(--surface-2);border:1px solid var(--rule);border-radius:10px;padding:14px 16px;overflow-x:auto;line-height:1.55;margin:1rem 0}
+details{border:1px solid var(--rule);border-radius:10px;background:var(--surface);margin:.6rem 0}
+details summary{cursor:pointer;padding:.8rem 1rem;font-weight:600;list-style:none;display:flex;justify-content:space-between;gap:12px}
+details summary::-webkit-details-marker{display:none}
+details summary::after{content:"+";color:var(--ink-3);font-weight:400}
+details[open] summary::after{content:"−"}
+details .inner{padding:0 1rem 1rem;color:var(--ink-2);font-size:.925rem}
+details .inner ul{margin:0;padding-left:1.1rem}
+details .inner li{margin:.35rem 0}
+
+.bib{position:relative}
+.copy{position:absolute;top:10px;right:10px;border:1px solid var(--rule);background:var(--surface);color:var(--ink-2);font:500 .78rem Inter,sans-serif;padding:.35rem .7rem;border-radius:6px;cursor:pointer}
+
+footer{border-top:1px solid var(--rule);padding:32px 0 48px;color:var(--ink-3);font-size:.84rem}
+
+#tip{position:fixed;pointer-events:none;background:var(--ink);color:var(--bg);font:500 .78rem/1.35 Inter,sans-serif;padding:6px 9px;border-radius:6px;opacity:0;transition:opacity .1s;z-index:50;white-space:nowrap}
+
+/* video tiles */
+.vid{margin:0;background:var(--surface);border:1px solid var(--rule);border-radius:12px;overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column}
+.vid video{display:block;width:100%;height:auto;aspect-ratio:672/600;object-fit:cover;background:#dfe3ea}
+.vid figcaption{padding:10px 12px 12px;font-size:.84rem;color:var(--ink-2);line-height:1.45;flex:1}
+.vid figcaption q{color:var(--ink);font-style:italic;quotes:"“" "”"}
+.vid .lbl{display:block;font:600 .68rem/1 Inter,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);margin-bottom:6px}
+.vid.accent{border-color:var(--accent)}
+.vid.accent .lbl{color:var(--accent)}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.teaser{max-width:960px;margin:2.5rem auto 0;text-align:left}
+.teaser .note{font-size:.82rem;color:var(--ink-3);text-align:center;margin-top:10px}
+
+.compose{display:grid;grid-template-columns:1fr 28px 1fr 28px 1.25fr;align-items:center;gap:6px}
+.op{font:600 1.5rem/1 "Source Serif 4",serif;color:var(--ink-3);text-align:center}
+
+.aside-note{font-size:.84rem;color:var(--ink-3);border-left:2px solid var(--rule);padding-left:12px;margin:0 0 1rem;max-width:720px}
+
+@media (max-width:760px){
+  section{padding:48px 0}
+  .grid3{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -16px;padding:0 16px 8px;scrollbar-width:none}
+  .grid3::-webkit-scrollbar{display:none}
+  .grid3>.vid{flex:0 0 72%;scroll-snap-align:center}
+  .compose{grid-template-columns:1fr 1fr;gap:10px}
+  .compose .op{display:none}
+  .compose .vid:last-child{grid-column:1/-1}
+  .vid figcaption{font-size:.78rem;padding:8px 10px 10px}
+  .panels,.two,.eq-notes{grid-template-columns:1fr}
+  .stats{grid-template-columns:1fr 1fr 1fr;gap:8px}
+  .stat{padding:10px}
+  .stat .v{font-size:1.05rem;white-space:nowrap}
+  .stat .v small{font-size:.8rem}
+  .finding{grid-template-columns:1fr}
+  .num{width:30px;height:30px;font-size:.95rem}
+  .tf{padding:14px 12px}
+  .tf-grid{grid-template-columns:1fr}
+  .tf-p{display:grid;grid-template-columns:52% 1fr;column-gap:12px;align-items:center}
+  .tf-t{grid-column:1/-1}
+  .tf-svg,.tf-off{grid-row:2/5;margin:4px 0 0}
+  .tf-ar{flex-direction:row;gap:6px;padding:4px 0}
+  .tf-ar svg{transform:rotate(90deg)}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap">
+    <nav aria-label="Sections">
+      <a href="#setup">Setup</a>
+      <a href="#bound">The bound</a>
+      <a href="#results">Results</a>
+      <a href="#reflow">Reflow</a>
+      <a href="#demos">Demo</a>
+      <a href="#reproduce">Reproduce</a>
+      <a href="#caveats">Caveats</a>
+      <a href="#citation">Cite</a>
+    </nav>
+    <button class="theme-btn" id="themeBtn" aria-label="Toggle color theme" title="Toggle theme">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+    </button>
+  </div>
+</header>
+
+<main>
+<!-- ============ HERO ============ -->
+<div class="wrap hero">
+  <div class="venue">BeNTo @ NeurIPS 2026 · Workshop on Diffusion &amp; Flow Models</div>
+  <h1>Which Geometry Predicts Few-Step Degradation in Latent Flow Matching?</h1>
+  <div class="authors">Anonymous Authors</div>
+  <div class="buttons">
+    <a class="btn" href="https://openreview.net/pdf?id=K0bixbUbER" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>Paper</a>
+    <!-- TODO: swap this span for <a class="btn ghost" href="REPO_URL"> once the repository is public -->
+    <span class="btn ghost disabled" aria-disabled="true" title="Code release coming soon">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.53-1.33-1.28-1.69-1.28-1.69-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.68 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.41-2.69 5.39-5.26 5.67.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>Code <small>(soon)</small></span>
+    <a class="btn ghost" href="https://openreview.net/forum?id=K0bixbUbER" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>OpenReview</a>
+    <a class="btn ghost" href="reviewer_response.pdf">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Reviews &amp; response</a>
+    <a class="btn ghost" href="#citation">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 7h4v4H7zM13 7h4v4h-4zM9 11c0 3-2 5-3 6M15 11c0 3-2 5-3 6"/></svg>BibTeX</a>
+  </div>
+
+  <div class="teaser">
+    <div class="grid3">
+      <figure class="vid">
+        <video autoplay muted loop playsinline preload="metadata" poster="media/motion_walk_sit.jpg" aria-label="Skeleton walking forward and sitting down">
+          <source src="media/motion_walk_sit.mp4" type="video/mp4"></video>
+        <figcaption><q>a person walks forward and sits down</q></figcaption>
+      </figure>
+      <figure class="vid">
+        <video autoplay muted loop playsinline preload="metadata" poster="media/motion_jump_land.jpg" aria-label="Skeleton jumping and landing on both feet">
+          <source src="media/motion_jump_land.mp4" type="video/mp4"></video>
+        <figcaption><q>a person jumps up and lands on both feet</q></figcaption>
+      </figure>
+      <figure class="vid">
+        <video autoplay muted loop playsinline preload="metadata" poster="media/motion_wave.jpg" aria-label="Skeleton waving both hands">
+          <source src="media/motion_wave.mp4" type="video/mp4"></video>
+        <figcaption><q>a person waves both hands</q></figcaption>
+      </figure>
+    </div>
+    <p class="note">Text-to-motion samples from the latent flow model (LFM) studied in the paper, with 50 Euler steps and guidance 2.5.</p>
+  </div>
+
+  <div class="tldr">
+    <b>TL;DR.</b> In a latent flow model the solver integrates in one space, but the sample is only
+    evaluated after nonlinear maps. We follow the same trajectory through three spaces
+    (𝒵&nbsp;→&nbsp;𝒳&nbsp;→&nbsp;𝒬) and find that <b>only the integration-space geometry predicts
+    few-step degradation</b>. Downstream maps bend the trajectory more, and make its shape far more
+    sample-dependent, but that bending says nothing about how hard the trajectory is to integrate.
+    What the downstream map <em>does</em> contribute is local sensitivity, and that is strongly predictive.
+  </div>
+</div>
+
+<!-- ============ SETUP ============ -->
+<section id="setup">
+  <div class="wrap">
+    <div class="eyebrow">Setup</div>
+    <h2>One trajectory, three spaces</h2>
+    <div class="prose">
+      <p>Flow matching with a linear interpolant prescribes straight <em>conditional</em> paths. The
+      trajectory the learned field actually generates need not be straight, and in a latent model it is
+      transformed twice before anyone looks at it. <span class="mono">D<sub>φ</sub></span> is a frozen
+      convolutional autoencoder's decoder. <span class="mono">K</span> is the deterministic kinematic map
+      (root integration and root-relative reconstruction).</p>
+      <p><b>CDFM is the control.</b> It integrates directly in 𝒳, so any 𝒳&nbsp;→&nbsp;𝒬 effect it
+      shows comes from the kinematic map alone, with no autoencoder involved.</p>
+    </div>
+
+    <div class="tf" role="figure" aria-label="Schematic trajectories in each representation space, with measured spread and predictive correlation">
+      <div class="tf-head">
+        <div class="seg" role="group" aria-label="Model">
+          <button type="button" data-m="lfm" aria-pressed="true">LFM</button>
+          <button type="button" data-m="cdfm" aria-pressed="false">CDFM (control)</button>
+        </div>
+        <div class="tf-key"><span><i></i>one clip, noise → sample</span><span><i class="eu"></i>4 Euler steps</span></div>
+      </div>
+      <div class="tf-grid" id="tfGrid"></div>
+      <p class="tf-cap">Trajectories are schematic; the bars are measured over 512 clips. <b>Spread</b> is the standard
+      deviation of arc-to-chord across clips (log scale). <b>Predicts</b> is its Spearman correlation with 16-step
+      degradation. Downstream maps bend trajectories more and more unevenly, while the predictive signal fades.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ BOUND ============ -->
+<section id="bound">
+  <div class="wrap">
+    <div class="eyebrow">Theory</div>
+    <h2>Where each quantity lives</h2>
+    <div class="prose">
+      <p>A standard Euler bound (Proposition&nbsp;1) shows which quantities <em>can</em> affect the
+      mapped error, and in which space each one is defined:</p>
+    </div>
+    <div class="eq">
+      $$\bigl\lVert F(\hat S_1^{(n)}) - F(S_1)\bigr\rVert_{\mathcal Q} \;\le\; \underbrace{L_F^{(n)}}_{\text{sensitivity}} \cdot \frac{\Delta t}{2}\cdot\underbrace{\frac{e^{L_v}-1}{L_v}}_{\text{stability}}\cdot \underbrace{\sup_t \lVert \ddot S_t\rVert_{\mathcal S}}_{\text{2nd-order variation}}$$
+    </div>
+    <div class="eq-notes">
+      <div class="eq-note a"><b>Output-map sensitivity</b>The only way the downstream map enters.</div>
+      <div class="eq-note b"><b>Stability &amp; 2nd-order variation</b>Both are properties of the integration space 𝒮.</div>
+      <div class="eq-note c"><b>Bending of the mapped path</b>Does not appear anywhere in the bound.</div>
+    </div>
+    <p class="muted small" style="margin-top:1rem">This is a textbook result, used only qualitatively. The
+    measurements below decide which of these quantities actually matter.</p>
+  </div>
+</section>
+
+<!-- ============ RESULTS ============ -->
+<section id="results">
+  <div class="wrap">
+    <div class="eyebrow">Results</div>
+    <h2>What the measurements show</h2>
+    <p class="muted prose">HumanML3D text-to-motion. 512 fixed clips, 5 sampling replications, and
+    95% <i>t</i>-intervals across replications.</p>
+
+    <!-- 1 -->
+    <div class="finding">
+      <div class="num">1</div>
+      <div class="body">
+        <h3>Distortion grows across the maps, but dispersion grows faster</h3>
+        <p class="prose">We measure the arc-to-chord ratio of the same 50-step reference trajectory in
+        each space. Its mean rises modestly, but its spread across clips grows by up to two orders of
+        magnitude. CDFM's growth from 0.0034 to 0.3211 happens with <b>no autoencoder in the pipeline</b>,
+        so the decoder is not the only source of distortion.</p>
+        <div class="card">
+          <div class="panel-title">Arc-to-chord SD across clips (log scale)</div>
+          <div id="chartDisp"></div>
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead><tr><th>Model</th><th class="l">Space</th><th>Mean</th><th>SD across clips</th><th>Min</th><th>Max</th></tr></thead>
+              <tbody>
+                <tr><td>LFM</td><td class="l">𝒵</td><td class="n">1.0153</td><td class="n best">0.0052</td><td class="n">1.006</td><td class="n">1.033</td></tr>
+                <tr><td></td><td class="l">𝒳</td><td class="n">1.1572</td><td class="n">0.0928</td><td class="n">1.036</td><td class="n">1.577</td></tr>
+                <tr><td></td><td class="l">𝒬</td><td class="n">1.2658</td><td class="n best">0.5526</td><td class="n">1.001</td><td class="n">4.869</td></tr>
+                <tr><td>CDFM</td><td class="l">𝒳</td><td class="n">1.0087</td><td class="n">0.0034</td><td class="n">1.003</td><td class="n">1.026</td></tr>
+                <tr><td></td><td class="l">𝒬</td><td class="n">1.1003</td><td class="n">0.3211</td><td class="n">1.000</td><td class="n">6.090</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2 -->
+    <div class="finding">
+      <div class="num">2</div>
+      <div class="body">
+        <h3>The predictive signal lives in the integration space</h3>
+        <p class="prose">For LFM, the association is positive in 𝒵, <b>collapses at the decoder</b> (before
+        the kinematic map is applied), and cannot be distinguished from zero in 𝒬. A representation map can make a
+        trajectory look more bent while destroying the statistic's relation to integration difficulty.
+        Geometric distortion and loss of predictive signal are different phenomena.</p>
+        <div class="card">
+          <div class="panels">
+            <div><div class="panel-title">(a) Arc-to-chord, by space</div><div id="chartA"></div></div>
+            <div><div class="panel-title">(b) Predictors, LFM (in 𝒵)</div><div id="chartB"></div></div>
+            <div><div class="panel-title">(c) Predictors, CDFM (in 𝒳)</div><div id="chartC"></div></div>
+          </div>
+          <div class="legend" id="legA"></div>
+          <div class="legend" id="legB"></div>
+          <p class="cap">Spearman association between per-clip statistics of the 50-step reference trajectory and
+          matched few-step degradation δ<sub>𝒬</sub>, plotted against the number of steps. Error bars are 95%
+          <i>t</i>-intervals over five replications. Hover a legend entry to isolate its series.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3 -->
+    <div class="finding">
+      <div class="num">3</div>
+      <div class="body">
+        <h3>Local beats global, and gain beats both</h3>
+        <p class="prose">For LFM at one step, maximum turning angle clearly beats arc-to-chord
+        (0.538&nbsp;±&nbsp;0.032 vs 0.274&nbsp;±&nbsp;0.021). This fits the bound depending on a local
+        supremum rather than a path average. Empirical output-map gain is the strongest single predictor
+        for both models at every budget.</p>
+        <div class="stats">
+          <div class="stat"><div class="v">0.72–0.78</div><div class="k">gain, LFM</div></div>
+          <div class="stat"><div class="v">0.60–0.65</div><div class="k">gain, CDFM</div></div>
+          <div class="stat"><div class="v">0.54 <small>vs</small> 0.27</div><div class="k">turn vs arc, LFM @1</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4 -->
+    <div class="finding">
+      <div class="num">4</div>
+      <div class="body">
+        <h3>The gain is an amplifier, and more than one</h3>
+        <p class="prose">A sensitive output map would correlate with degradation through amplification alone.
+        We therefore run two controls, and the association survives both. The trajectory-<em>mean</em> gain is
+        stronger than the terminal value for both models at every budget. So sensitivity met
+        <em>along the path</em> carries information beyond the final state.</p>
+        <div class="card">
+          <div class="tbl-wrap" style="margin:0">
+            <table class="tbl">
+              <thead><tr><th>Control</th><th>LFM</th><th>CDFM</th></tr></thead>
+              <tbody>
+                <tr><td class="l" style="white-space:normal">vs. integration-space degradation δ<sub>int</sub><br><span class="muted small">amplification impossible</span></td><td class="n">0.465–0.495</td><td class="n">0.421–0.522</td></tr>
+                <tr><td class="l" style="white-space:normal">partial association with δ<sub>𝒬</sub> given δ<sub>int</sub></td><td class="n">0.648–0.690</td><td class="n">0.471–0.495</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="callout warn prose"><b>One effect does not survive the controls, and we flag it.</b>
+        CDFM's segment-midpoint gain beats its terminal gain by +0.107 at one step against δ<sub>𝒬</sub>, but by only
+        +0.002 against δ<sub>int</sub>. The effect comes from the amplification stage, so we report it only as a
+        𝒬-space observation.</div>
+      </div>
+    </div>
+
+    <!-- 5 -->
+    <div class="finding">
+      <div class="num">5</div>
+      <div class="body">
+        <h3>Arc-length schedules don't beat cosine</h3>
+        <p class="prose">Placing timesteps by equalising cumulative arc length does not beat a cosine schedule, which
+        gives the lowest FID at every budget for both models. For LFM at four steps, cosine reaches 0.453, against
+        1.851 for the integration-space arc-matched grid and 2.077 for the 𝒬-profile grid. Arc length is a
+        first-order quantity, while Euler truncation error is governed by second-order variation. The
+        representation space and the scheduling statistic are separate design choices.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ REFLOW ============ -->
+<section id="reflow">
+  <div class="wrap">
+    <div class="eyebrow">Intervention</div>
+    <h2>Straighten the predictive geometry, and few-step quality follows</h2>
+    <p class="prose">A reflow student is fine-tuned on 20,096 self-generated pairs from the guidance-2.5 teacher.
+    Its integration-space trajectories become much straighter. At matched guidance, one-step FID falls from
+    17.17 to 0.75, and <b>a single function evaluation nearly matches the guidance-2.5 teacher at eight steps</b>
+    (0.76). The advantage is confined to the few-step regime: the guided teacher overtakes the student
+    between 8 and 16 steps.</p>
+
+    <div class="stats">
+      <div class="stat"><div class="v">4.2×</div><div class="k">lower max turning angle</div></div>
+      <div class="stat"><div class="v">17.2 <small>→</small> 0.75</div><div class="k">one-step FID, guidance 1.0</div></div>
+      <div class="stat"><div class="v">0.43 <small>→</small> 0.55</div><div class="k">one-step R@3 vs best teacher</div></div>
+    </div>
+
+    <div class="card">
+      <div class="panel-title">FID vs sampling steps (log–log)</div>
+      <div id="chartNfe"></div>
+      <div class="legend" id="legNfe"></div>
+      <p class="cap">LFM teacher at classifier-free-guidance scales 1.0, 1.5 and 2.5, and the reflowed student
+      at guidance 1.0. Three sampling replications, with 95% confidence intervals. The student's curve is nearly flat.</p>
+    </div>
+
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead><tr><th>Model</th><th>Guid.</th><th>Arc/chord</th><th>Max turn</th><th>FID @1</th><th>@8</th><th>@16</th><th>R@3 @1</th></tr></thead>
+        <tbody>
+          <tr><td>Teacher</td><td class="n">1.0</td><td class="n">1.0088</td><td class="n">0.164</td><td class="n">17.17</td><td class="n">1.88</td><td class="n">0.95</td><td class="n">0.283</td></tr>
+          <tr><td>Teacher</td><td class="n">1.5</td><td class="n">1.0096</td><td class="n">0.221</td><td class="n">10.87</td><td class="n">1.13</td><td class="n">0.58</td><td class="n">0.371</td></tr>
+          <tr><td>Teacher</td><td class="n">2.5</td><td class="n">1.0153</td><td class="n">0.357</td><td class="n">7.36</td><td class="n">0.76</td><td class="n best">0.36</td><td class="n">0.430</td></tr>
+          <tr class="hl"><td><b>Reflow</b></td><td class="n">1.0</td><td class="n best">1.0020</td><td class="n best">0.084</td><td class="n best">0.75</td><td class="n best">0.60</td><td class="n">0.54</td><td class="n best">0.548</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout prose"><b>Guidance bends the trajectory while improving it, and that is not a counterexample.</b>
+    Raising guidance from 1.0 to 2.5 raises the turning angle from 0.164 to 0.357 <em>and</em> improves one-step
+    FID from 17.17 to 7.36. Our associations are measured <b>across clips at a fixed velocity field</b>, and
+    changing guidance changes the field. Trajectory geometry predicts difficulty within a field; it is not a
+    criterion for choosing between models.</div>
+  </div>
+</section>
+
+<!-- ============ DEMOS ============ -->
+<section id="demos">
+  <div class="wrap">
+    <div class="eyebrow">Demo</div>
+    <h2>Body-part composition</h2>
+    <p class="prose">The CDFM checkpoint analysed in the paper can also compose motions at sampling time. Two samples are
+    generated from different prompts, and the upper body of one is blended with the lower body of the other using a
+    feathered mask across the spine.</p>
+    <p class="aside-note">This is a qualitative illustration built on the same checkpoint. It is not part of the paper's evaluation.</p>
+    <div class="compose">
+      <figure class="vid">
+        <video muted loop playsinline preload="metadata" poster="media/compose_upper.jpg" aria-label="Upper-body source: waving both hands">
+          <source src="media/compose_upper.mp4" type="video/mp4"></video>
+        <figcaption><span class="lbl">Upper body</span><q>a person waves both hands</q></figcaption>
+      </figure>
+      <div class="op" aria-hidden="true">+</div>
+      <figure class="vid">
+        <video muted loop playsinline preload="metadata" poster="media/compose_lower.jpg" aria-label="Lower-body source: walking forward">
+          <source src="media/compose_lower.mp4" type="video/mp4"></video>
+        <figcaption><span class="lbl">Lower body</span><q>a person walks forward</q></figcaption>
+      </figure>
+      <div class="op" aria-hidden="true">=</div>
+      <figure class="vid accent">
+        <video muted loop playsinline preload="metadata" poster="media/compose_blended.jpg" aria-label="Composed result: walking forward while waving">
+          <source src="media/compose_blended.mp4" type="video/mp4"></video>
+        <figcaption><span class="lbl">Composed</span>Walks forward while waving</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============ REPRODUCE ============ -->
+<section id="reproduce">
+  <div class="wrap">
+    <div class="eyebrow">Code</div>
+    <h2>Reproduce every table and figure</h2>
+    <div class="two">
+      <div>
+        <p>Python <b>3.11</b> is required (3.13 has no wheels for several dependencies). Every measurement
+        runs inference-only on frozen checkpoints, on a single V100.</p>
+<pre><code>conda create -n mfg python=3.11 -y
+conda activate mfg
+pip install torch==2.5.1 \
+  --index-url https://download.pytorch.org/whl/cu121
+pip install -r requirements.txt
+
+export HML3D_ROOT=/path/to/HumanML3D/humanml
+export RVQ_CKPT=/path/to/rvq_vae_best.pt
+export WORK_DIR=./runs
+export EVAL_N=512</code></pre>
+      </div>
+      <div>
+        <div class="tbl-wrap" style="margin-top:0">
+          <table class="tbl">
+            <thead><tr><th>Paper item</th><th class="l">Script (<code>experiments/</code>)</th></tr></thead>
+            <tbody>
+              <tr><td>Table 1</td><td class="l"><code>three_space_geometry.py</code></td></tr>
+              <tr><td>Figure 1</td><td class="l"><code>curvature_nfe_v2.py</code></td></tr>
+              <tr><td>Table 2</td><td class="l"><code>gain_disentangle.py</code></td></tr>
+              <tr><td>§7 schedules</td><td class="l"><code>curvature_schedule.py</code></td></tr>
+              <tr><td>Table 3, Fig. 2</td><td class="l"><code>guidance_control.py</code></td></tr>
+              <tr><td>Reflow training</td><td class="l"><code>reflow_experiment.py</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="small muted">Figures are rendered with <code>figures/make_figs.py</code>. Slurm wrappers live in
+        <code>scripts/</code>. Typical runtimes at 512 clips are 15–50 minutes per experiment.</p>
+      </div>
+    </div>
+
+    <div class="callout warn"><b>Sample the reflow student at guidance 1.0.</b> Its training pairs were generated
+    with classifier-free guidance already applied, so sampling it at 2.5 applies guidance twice and makes a
+    working model look broken.</div>
+
+    <h3>Conventions that matter</h3>
+    <details><summary>Fixed clip set</summary><div class="inner">We use <code>np.random.default_rng(0)</code> and take the first 512
+      indices of a permutation of the test indices, sorted. The set is identical across every experiment and held fixed
+      across replications.</div></details>
+    <details><summary>Paired seeding</summary><div class="inner">For a batch starting at index <code>s</code> in replication
+      <code>r</code>, the seed is <code>s + 100000*r</code>. Each clip therefore gets the <b>same noise at every step budget</b>,
+      which makes degradation a paired, within-clip comparison.</div></details>
+    <details><summary>Two levels of averaging</summary><div class="inner">Statistics are computed per clip and reduced to one value
+      per replication (a mean, or a Spearman coefficient across the 512 clips). Intervals are then taken across replications,
+      so they measure <em>sampling</em> variance. Dispersion across clips is reported separately.</div></details>
+    <details><summary>Dataset split</summary><div class="inner">We use 13,840 train and 2,644 test clips (our copy did not materialise
+      the mirrored <code>M</code>-prefixed entries). FID is biased upward at smaller sample sizes, so our <b>absolute values are
+      not comparable to published leaderboards</b>. Every claim in the paper compares treatments under one fixed protocol.</div></details>
+  </div>
+</section>
+
+<!-- ============ CAVEATS ============ -->
+<section id="caveats">
+  <div class="wrap">
+    <div class="eyebrow">Limitations</div>
+    <h2>Known issues and caveats</h2>
+    <div class="prose">
+      <details open><summary>What the intervals do and don't cover</summary><div class="inner"><ul>
+        <li>The intervals cover <b>sampler variance only</b>: a fixed clip set, one trained model per type, and 3–5 replications.
+          Training and clip-set variance are not included, so the intervals understate total uncertainty.</li>
+        <li>Differences between two Spearman coefficients are descriptive. We test them only where the paper states an explicit
+          dependent-correlation comparison.</li>
+      </ul></div></details>
+      <details><summary>Measurement proxies</summary><div class="inner"><ul>
+        <li>Arc-to-chord and turning angle are computed on the common <i>n</i>&nbsp;=&nbsp;50 grid and are comparable only at that resolution.
+          Neither estimates the bound's second-order term.</li>
+        <li>The gain is a 4-probe finite difference, closer to a dimension-normalised Frobenius norm than to the operator norm.
+          Integration-space dimensions differ (<i>d</i>&nbsp;=&nbsp;12,544 for LFM vs 51,548 for CDFM), so compare gains only within a model.</li>
+      </ul></div></details>
+      <details><summary>Confounders and scope</summary><div class="inner"><ul>
+        <li>We do not control for sequence length. It is a conditioning input and a plausible common cause of both gain and
+          integration difficulty.</li>
+        <li>The stratified comparison uses 128-clip strata and retains a +0.87 residual at fifty steps. Read the few-step gap against that floor.</li>
+        <li>Reflow covers a single student and configuration. It shows that straightening <em>can</em> coincide with much better
+          few-step behaviour, not that the size of the effect or the crossover point generalises.</li>
+      </ul></div></details>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CITATION ============ -->
+<section id="citation">
+  <div class="wrap">
+    <div class="eyebrow">Citation</div>
+    <h2>BibTeX</h2>
+    <div class="bib">
+      <button class="copy" id="copyBib">Copy</button>
+<pre id="bibtex"><code>@inproceedings{anon2026geometry,
+  title     = {Which Geometry Predicts Few-Step Degradation in Latent Flow Matching?},
+  author    = {Anonymous},
+  booktitle = {NeurIPS 2026 Workshop on Beyond Next-Token Prediction:
+               Diffusion and Flow Models (BeNTo)},
+  year      = {2026}
+}</code></pre>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    Built on <a href="https://github.com/EricGuo5513/HumanML3D">HumanML3D</a> and its evaluator (Guo et al., CVPR 2022).
+    Code released under MIT; HumanML3D is governed by its own terms.
+  </div>
+</footer>
+
+<div id="tip" role="tooltip"></div>
+
+<script>
+/* ---------------- theme toggle ---------------- */
+(function(){
+  const root=document.documentElement, btn=document.getElementById('themeBtn');
+  let saved=null; try{saved=localStorage.getItem('theme')}catch(e){}
+  if(saved) root.setAttribute('data-theme',saved);
+  btn.addEventListener('click',()=>{
+    const cur=root.getAttribute('data-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
+    const next=cur==='dark'?'light':'dark';
+    root.setAttribute('data-theme',next);
+    try{localStorage.setItem('theme',next)}catch(e){}
+  });
+})();
+
+/* ---------------- copy bibtex ---------------- */
+document.getElementById('copyBib').addEventListener('click',e=>{
+  const t=document.getElementById('bibtex').innerText;
+  (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(
+    ()=>{e.target.textContent='Copied';setTimeout(()=>e.target.textContent='Copy',1500)},
+    ()=>{e.target.textContent='Select & copy'});
+});
+
+/* ---------------- trajectory figure ---------------- */
+(function(){
+  const grid=document.getElementById('tfGrid'); if(!grid) return;
+  const NS='http://www.w3.org/2000/svg';
+  // bend: [min,max] control-point amplitude; wild: chance of an S-shaped bend
+  const P={
+    calm:{amp:[0,2.5],wild:0}, mid:{amp:[4,22],wild:.3}, wild:{amp:[6,62],wild:.6}, wild2:{amp:[3,50],wild:.5}
+  };
+  const M={
+    lfm:[
+      {sym:'𝒵',nm:'latent',int:true,shape:'calm',sd:.0052,rho:.413},
+      {arrow:'D<sub>φ</sub>'},
+      {sym:'𝒳',nm:'decoded motion',shape:'mid',sd:.0928,rho:.089},
+      {arrow:'K'},
+      {sym:'𝒬',nm:'Cartesian',shape:'wild',sd:.5526,rho:-.024}],
+    cdfm:[
+      {sym:'𝒵',nm:'latent',off:true},
+      {arrow:'D<sub>φ</sub>',off:true},
+      {sym:'𝒳',nm:'motion',int:true,shape:'calm',sd:.0034,rho:.559},
+      {arrow:'K'},
+      {sym:'𝒬',nm:'Cartesian',shape:'wild2',sd:.3211,rho:.373}]
+  };
+  function rng(seed){return()=>{seed=(seed*16807)%2147483647;return(seed-1)/2147483646}}
+  function paths(shape,seed){
+    const r=rng(seed),p=P[shape],out=[];
+    for(let i=0;i<8;i++){
+      const y0=20+i*11.5+(r()-.5)*3, y1=y0+(r()-.5)*14;
+      const a=(p.amp[0]+Math.pow(r(),1.6)*(p.amp[1]-p.amp[0]))*(r()<.5?-1:1);
+      const s=r()<p.wild?-1:1;
+      const c1=[70,y0+(y1-y0)*.33+a], c2=[130,y1-(y1-y0)*.33+a*s];
+      out.push({d:`M14,${y0.toFixed(1)} C${c1[0]},${c1[1].toFixed(1)} ${c2[0]},${c2[1].toFixed(1)} 186,${y1.toFixed(1)}`,y0,y1,c1,c2});
+    }
+    return out;
+  }
+  const bez=(t,a,b,c,d)=>{const u=1-t;return u*u*u*a+3*u*u*t*b+3*u*t*t*c+t*t*t*d};
+  function svg(cell,seed){
+    const s=document.createElementNS(NS,'svg');s.setAttribute('viewBox','0 0 200 120');s.setAttribute('class','tf-svg');s.setAttribute('aria-hidden','true');
+    const cp=document.createElementNS(NS,'clipPath');cp.id='tfc'+seed;cp.innerHTML='<rect width="200" height="120"/>';s.appendChild(cp);
+    const g=document.createElementNS(NS,'g');g.setAttribute('clip-path',`url(#tfc${seed})`);s.appendChild(g);
+    const ps=paths(cell.shape,seed);
+    ps.forEach((p,i)=>{
+      const e=document.createElementNS(NS,'path');e.setAttribute('d',p.d);e.setAttribute('fill','none');
+      e.setAttribute('style',`stroke:var(${cell.int?'--c-z':'--ink-3'});stroke-width:1.4;opacity:${cell.int?.75:.6}`);g.appendChild(e);
+      [[14,p.y0],[186,p.y1]].forEach(([x,y],k)=>{const c=document.createElementNS(NS,'circle');c.setAttribute('cx',x);c.setAttribute('cy',y);c.setAttribute('r',k?2.2:1.6);c.setAttribute('style',`fill:var(${k?'--ink-2':'--ink-3'})`);g.appendChild(c)});
+    });
+    if(cell.int){ // Euler polyline on one trajectory
+      const p=ps[3],pts=[0,.25,.5,.75,1].map(t=>[bez(t,14,p.c1[0],p.c2[0],186),bez(t,p.y0,p.c1[1],p.c2[1],p.y1)]);
+      const e=document.createElementNS(NS,'polyline');e.setAttribute('points',pts.map(q=>q.join(',')).join(' '));
+      e.setAttribute('style','fill:none;stroke:var(--accent);stroke-width:1.6;stroke-dasharray:4 2.5');g.appendChild(e);
+      pts.forEach(q=>{const c=document.createElementNS(NS,'circle');c.setAttribute('cx',q[0]);c.setAttribute('cy',q[1]);c.setAttribute('r',2.4);c.setAttribute('style','fill:var(--surface);stroke:var(--accent);stroke-width:1.4');g.appendChild(c)});
+    }
+    return s;
+  }
+  const spW=v=>Math.max(3,(Math.log(v)-Math.log(.002))/(Math.log(1)-Math.log(.002))*100);
+  const rhW=v=>Math.max(0,v/.6*100);
+  function render(m){
+    grid.innerHTML='';
+    M[m].forEach((c,i)=>{
+      if(c.arrow){
+        const a=document.createElement('div');a.className='tf-ar'+(c.off?' off':'');
+        a.innerHTML=`<span>${c.arrow}</span><svg viewBox="0 0 28 12"><path d="M1 6H25M20 1.5 25.5 6 20 10.5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>`;
+        grid.appendChild(a);return;
+      }
+      const p=document.createElement('div');p.className='tf-p'+(c.int?' int':'')+(c.off?' off':'');
+      p.innerHTML=`<div class="tf-t"><span class="sym">${c.sym}</span><span class="nm">${c.nm}</span>${c.int?'<span class="badge">solver runs here</span>':''}</div>`;
+      if(c.off){
+        const o=document.createElement('div');o.className='tf-off';o.textContent='Not used: CDFM integrates directly in 𝒳, with no autoencoder';p.appendChild(o);
+      }else{
+        p.appendChild(svg(c,(m==='lfm'?11:37)+i*7));
+        p.insertAdjacentHTML('beforeend',
+          `<div class="mtr sp"><div class="ml"><span>Spread</span><b>${c.sd}</b></div><div class="tr"><div class="fl" style="width:0"></div></div></div>
+           <div class="mtr rh"><div class="ml"><span>Predicts</span><b>${c.rho<0?'≈ 0':'ρ '+c.rho.toFixed(2)}</b></div><div class="tr"><div class="fl" style="width:0"></div></div></div>`);
+        requestAnimationFrame(()=>requestAnimationFrame(()=>{
+          p.querySelector('.sp .fl').style.width=spW(c.sd)+'%';
+          p.querySelector('.rh .fl').style.width=rhW(c.rho)+'%';
+        }));
+      }
+      grid.appendChild(p);
+    });
+  }
+  document.querySelectorAll('.seg button').forEach(b=>b.addEventListener('click',()=>{
+    document.querySelectorAll('.seg button').forEach(x=>x.setAttribute('aria-pressed',x===b));
+    render(b.dataset.m);
+  }));
+  render('lfm');
+})();
+
+/* ---------------- videos: play only when visible ---------------- */
+(function(){
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const vids=[...document.querySelectorAll('video')];
+  vids.forEach(v=>{v.removeAttribute('autoplay');v.controls=reduce});
+  if(reduce) return;
+  const play=v=>{const p=v.play();if(p)p.catch(()=>{v.controls=true})};
+  const io=new IntersectionObserver(es=>es.forEach(e=>{
+    const v=e.target;
+    if(e.isIntersecting&&!v.closest('[hidden]')) play(v); else v.pause();
+  }),{threshold:.25});
+  vids.forEach(v=>io.observe(v));
+})();
+
+
+/* ---------------- charts ---------------- */
+const NS='http://www.w3.org/2000/svg';
+const tip=document.getElementById('tip');
+function el(tag,attrs,parent){const n=document.createElementNS(NS,tag);for(const k in attrs)n.setAttribute(k,attrs[k]);if(parent)parent.appendChild(n);return n}
+function showTip(ev,html){tip.innerHTML=html;tip.style.opacity=1;const x=Math.min(ev.clientX+12,innerWidth-tip.offsetWidth-8);tip.style.left=x+'px';tip.style.top=(ev.clientY-36)+'px'}
+function hideTip(){tip.style.opacity=0}
+
+function lineChart(host,o){
+  const W=o.w||320,H=o.h||230,pl=o.pl??38,pr=10,pt=10,pb=30;
+  const svg=el('svg',{viewBox:`0 0 ${W} ${H}`,class:'chart',role:'img','aria-label':o.label||''},null);
+  const lx=Math.log(o.x[0]),hx=Math.log(o.x[1]);
+  const sx=v=>pl+(Math.log(v)-lx)/(hx-lx)*(W-pl-pr);
+  const ylog=!!o.ylog;
+  const fy=v=>ylog?Math.log(v):v;
+  const ly=fy(o.y[0]),hy=fy(o.y[1]);
+  const sy=v=>pt+(1-(fy(v)-ly)/(hy-ly))*(H-pt-pb);
+  // grid + ticks
+  o.yticks.forEach(t=>{
+    el('line',{x1:pl,x2:W-pr,y1:sy(t),y2:sy(t),style:'stroke:var(--grid)'},svg);
+    if(!o.noYLabels){const tx=el('text',{x:pl-6,y:sy(t)+3.5,'text-anchor':'end','font-size':11},svg);tx.textContent=t}
+  });
+  if(o.zero){el('line',{x1:pl,x2:W-pr,y1:sy(0),y2:sy(0),style:'stroke:var(--ink-3)','stroke-dasharray':'4 3','stroke-width':1},svg)}
+  o.xticks.forEach(t=>{const tx=el('text',{x:sx(t),y:H-pb+15,'text-anchor':'middle','font-size':11},svg);tx.textContent=t});
+  const xl=el('text',{x:(pl+W-pr)/2,y:H-2,'text-anchor':'middle','font-size':10},svg);xl.textContent=o.xlabel||'steps';
+  // series
+  const groups={};
+  o.series.forEach(s=>{
+    const g=el('g',{class:'series','data-key':s.key},svg);groups[s.key]=g;
+    const col=`var(${s.color})`;
+    const d=s.pts.map((p,i)=>(i?'L':'M')+sx(p[0]).toFixed(1)+','+sy(p[1]).toFixed(1)).join('');
+    s.pts.forEach(p=>{if(p[2]){const x=sx(p[0]),lo=Math.max(p[1]-p[2],o.y[0]);
+      el('line',{x1:x,x2:x,y1:sy(p[1]+p[2]),y2:sy(lo),style:`stroke:${col}`,'stroke-width':1,opacity:.7},g);}});
+    el('path',{d,fill:'none',style:`stroke:${col}`,'stroke-width':s.w||2,'stroke-dasharray':s.dash?'5 3':'none','stroke-linejoin':'round'},g);
+    s.pts.forEach(p=>{
+      const c=el('circle',{cx:sx(p[0]),cy:sy(p[1]),r:s.big?4:3,style:`fill:${s.dash?'var(--surface)':col};stroke:${col}`,'stroke-width':1.5},g);
+      const hit=el('circle',{cx:sx(p[0]),cy:sy(p[1]),r:9,fill:'transparent'},g);
+      const txt=`<b>${s.name}</b> · ${p[0]} step${p[0]>1?'s':''}<br>${o.metric||'ρ'} = ${p[1]}${p[2]?' ± '+p[2]:''}`;
+      hit.addEventListener('mousemove',ev=>showTip(ev,txt));hit.addEventListener('mouseleave',hideTip);
+    });
+  });
+  host.appendChild(svg);
+  return groups;
+}
+
+function legend(host,series,groupsList){
+  series.forEach(s=>{
+    const sp=document.createElement('span');
+    sp.innerHTML=`<i class="${s.dash?'dash':''}" style="color:var(${s.color})"></i>${s.name}`;
+    sp.addEventListener('mouseenter',()=>groupsList.forEach(G=>Object.entries(G).forEach(([k,g])=>g.classList.toggle('dim',k!==s.key))));
+    sp.addEventListener('mouseleave',()=>groupsList.forEach(G=>Object.values(G).forEach(g=>g.classList.remove('dim'))));
+    host.appendChild(sp);
+  });
+}
+
+const X=[1,2,4,8,16];
+const z=(vals,errs)=>vals.map((v,i)=>[X[i],v,errs[i]]);
+
+// Figure 1a
+const sA=[
+  {key:'lz',name:'LFM 𝒵',color:'--c-z',pts:z([0.274,0.280,0.337,0.387,0.413],[0.021,0.021,0.026,0.032,0.029])},
+  {key:'lx',name:'LFM 𝒳',color:'--c-turn',pts:z([0.085,0.084,0.073,0.082,0.089],[0.021,0.018,0.026,0.039,0.042])},
+  {key:'lq',name:'LFM 𝒬',color:'--c-vel',pts:z([-0.055,-0.074,-0.091,-0.061,-0.024],[0.021,0.016,0.032,0.043,0.041])},
+  {key:'cx',name:'CDFM 𝒳',color:'--c-arc',dash:true,pts:z([0.267,0.370,0.451,0.509,0.559],[0.030,0.030,0.027,0.025,0.030])},
+  {key:'cq',name:'CDFM 𝒬',color:'--c-q',dash:true,pts:z([0.206,0.274,0.313,0.341,0.373],[0.018,0.011,0.007,0.027,0.037])},
+];
+const gA=lineChart(document.getElementById('chartA'),{x:[0.85,19],y:[-0.2,0.68],xticks:X,yticks:[-0.2,0,0.2,0.4,0.6],series:sA,zero:true,label:'Arc-to-chord Spearman by space'});
+legend(document.getElementById('legA'),sA,[gA]);
+
+// Figure 1b,c
+const P=(key,name,color)=>({key,name,color});
+const sB=[
+  {...P('gain','Output-map gain','--c-gain'),pts:z([0.745,0.772,0.777,0.758,0.724],[0.014,0.010,0.010,0.010,0.012])},
+  {...P('turn','Max turning angle','--c-turn'),pts:z([0.538,0.544,0.537,0.542,0.552],[0.032,0.031,0.028,0.027,0.032])},
+  {...P('arc','Arc-to-chord','--c-arc'),pts:z([0.274,0.280,0.337,0.387,0.413],[0.021,0.021,0.026,0.032,0.029])},
+  {...P('vel','Velocity variation','--c-vel'),pts:z([0.187,0.192,0.246,0.297,0.328],[0.016,0.019,0.026,0.036,0.036])},
+];
+const sC=[
+  {...P('gain','Output-map gain','--c-gain'),pts:z([0.613,0.635,0.648,0.628,0.601],[0.036,0.032,0.034,0.032,0.014])},
+  {...P('turn','Max turning angle','--c-turn'),pts:z([0.458,0.521,0.547,0.549,0.561],[0.019,0.018,0.018,0.023,0.019])},
+  {...P('arc','Arc-to-chord','--c-arc'),pts:z([0.267,0.370,0.451,0.509,0.559],[0.030,0.030,0.027,0.025,0.030])},
+  {...P('vel','Velocity variation','--c-vel'),pts:z([0.172,0.283,0.371,0.438,0.497],[0.030,0.028,0.023,0.022,0.027])},
+];
+const bcOpts={x:[0.85,19],y:[0.1,0.85],xticks:X,yticks:[0.2,0.4,0.6,0.8]};
+const gB=lineChart(document.getElementById('chartB'),{...bcOpts,series:sB,label:'LFM predictors'});
+const gC=lineChart(document.getElementById('chartC'),{...bcOpts,series:sC,label:'CDFM predictors'});
+legend(document.getElementById('legB'),sB,[gB,gC]);
+
+// Reflow NFE curves
+const XN=[1,2,4,8,16,50];
+const n=(vals,errs)=>vals.map((v,i)=>[XN[i],v,errs[i]]);
+const sN=[
+  {key:'t10',name:'Teacher, g = 1.0',color:'--c-vel',pts:n([17.17,10.93,4.85,1.88,0.95,0.65],[1.11,0.60,0.80,0.40,0.21,0.10])},
+  {key:'t15',name:'Teacher, g = 1.5',color:'--c-arc',pts:n([10.87,6.55,2.81,1.13,0.58,0.42],[0.70,0.11,0.58,0.21,0.08,0.10])},
+  {key:'t25',name:'Teacher, g = 2.5',color:'--c-q',pts:n([7.36,4.40,1.92,0.76,0.36,0.27],[0.51,0.04,0.24,0.03,0.09,0.10])},
+  {key:'rf',name:'Reflow, g = 1.0',color:'--c-z',w:3,big:true,pts:n([0.75,0.73,0.67,0.60,0.54,0.49],[0.16,0.15,0.16,0.15,0.12,0.08])},
+];
+const nHost=document.getElementById('chartNfe'),nW=Math.max(340,Math.min(640,nHost.clientWidth||640));
+const gN=lineChart(nHost,{w:nW,h:nW<500?280:300,pl:40,x:[0.85,60],y:[0.15,25],ylog:true,xticks:XN,yticks:[0.2,0.5,1,2,5,10,20],series:sN,metric:'FID',label:'FID versus steps'});
+legend(document.getElementById('legNfe'),sN,[gN]);
+
+// Dispersion bars
+(function(){
+  const rows=[['LFM 𝒵',0.0052,'--c-z',1],['LFM 𝒳',0.0928,'--c-z',0],['LFM 𝒬',0.5526,'--c-z',0],['CDFM 𝒳',0.0034,'--c-arc',1],['CDFM 𝒬',0.3211,'--c-arc',0]];
+  const host=document.getElementById('chartDisp');
+  const W=Math.max(340,Math.min(640,host.clientWidth||640)),rh=26,pl=70,pr=52,H=rows.length*rh+26;
+  const svg=el('svg',{viewBox:`0 0 ${W} ${H}`,class:'chart',role:'img','aria-label':'Arc-to-chord SD across clips'});
+  const lo=Math.log(0.002),hi=Math.log(1);
+  const sx=v=>pl+(Math.log(v)-lo)/(hi-lo)*(W-pl-pr);
+  [0.003,0.01,0.03,0.1,0.3,1].forEach(t=>{
+    el('line',{x1:sx(t),x2:sx(t),y1:0,y2:H-20,style:'stroke:var(--grid)'},svg);
+    const tx=el('text',{x:sx(t),y:H-5,'text-anchor':'middle','font-size':10},svg);tx.textContent=t;
+  });
+  rows.forEach((r,i)=>{
+    const y=i*rh+4;
+    const lb=el('text',{x:pl-8,y:y+14,'text-anchor':'end','font-size':11},svg);lb.textContent=r[0];lb.style.fill='var(--ink-2)';
+    const b=el('rect',{x:pl,y:y+3,width:Math.max(2,sx(r[1])-pl),height:rh-10,rx:3,style:`fill:var(${r[2]});opacity:${r[3]?1:.55}`},svg);
+    const v=el('text',{x:sx(r[1])+6,y:y+14,'font-size':11},svg);v.textContent=r[1];v.style.fill='var(--ink)';
+    b.addEventListener('mousemove',ev=>showTip(ev,`<b>${r[0]}</b>${r[3]?' (integration space)':''}<br>SD = ${r[1]}`));b.addEventListener('mouseleave',hideTip);
+  });
+  host.appendChild(svg);
+})();
+</script>
+</body>
+</html>
