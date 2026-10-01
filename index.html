@@ -75,10 +75,12 @@ code,pre,.mono{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.86
 .venue .v2{font-weight:500;font-size:.98rem;line-height:1.4}
 .venue .ext{display:inline-block;margin-left:5px;opacity:.7}
 .cal{font-family:"Cambria Math","STIX Two Math","Latin Modern Math",serif;font-size:1.08em}
-.hero h1{font-size:clamp(2rem,5vw,3.1rem);margin:0 auto 1.25rem;max-width:18ch}
+.hero h1{font-size:clamp(1.75rem,4vw,2.6rem);margin:0 auto 1.25rem;max-width:none;text-wrap:balance}
 .authors{color:var(--ink-2);margin-bottom:1.75rem}
 .authors .names{font-size:1.08rem;color:var(--ink);font-weight:500}
 .authors .affils{font-size:.86rem;color:var(--ink-3);margin-top:.3rem}
+.authors .names span{white-space:nowrap}
+.authors .affils span{margin:0 .5rem}
 .authors sup{font-size:.68em;color:var(--ink-3);margin-left:1px}
 .buttons{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
 .btn{display:inline-flex;align-items:center;gap:8px;padding:.6rem 1.05rem;border-radius:10px;background:var(--ink);color:var(--bg);text-decoration:none;font-weight:500;font-size:.925rem;border:1px solid var(--ink)}
@@ -208,6 +210,7 @@ footer{border-top:1px solid var(--rule);padding:32px 0 48px;color:var(--ink-3);f
 .aside-note{font-size:.84rem;color:var(--ink-3);border-left:2px solid var(--rule);padding-left:12px;margin:0 0 1rem;max-width:720px}
 
 @media (max-width:760px){
+  .authors .affils span{display:block;margin:0}
   .venue{padding:.65rem 1rem}
   .venue .v1{font-size:.98rem}
   .venue .v2{font-size:.86rem}
@@ -265,8 +268,8 @@ footer{border-top:1px solid var(--rule);padding:32px 0 48px;color:var(--ink-3);f
   </a>
   <h1>Which Geometry Predicts Few-Step Degradation in Latent Flow Matching?</h1>
   <div class="authors">
-    <div class="names">Mohamed Aziz Khadraoui<sup>1</sup> &nbsp;·&nbsp; Abdelkader Baggag<sup>2</sup></div>
-    <div class="affils"><sup>1</sup>Higher School of Communication of Tunis (SUP'COM), Tunisia &nbsp;&nbsp; <sup>2</sup>Qatar Computing Research Institute, Hamad Bin Khalifa University</div>
+    <div class="names"><span>Mohamed Aziz Khadraoui<sup>1</sup></span> &nbsp;·&nbsp; <span>Abdelkader Baggag<sup>2</sup></span></div>
+    <div class="affils"><span><sup>1</sup>Higher School of Communication of Tunis (SUP'COM), Tunisia</span> <span><sup>2</sup>Qatar Computing Research Institute, Hamad Bin Khalifa University</span></div>
   </div>
   <div class="buttons">
     <a class="btn" href="https://openreview.net/pdf?id=K0bixbUbER" target="_blank" rel="noopener">
