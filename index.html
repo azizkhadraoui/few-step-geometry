@@ -201,7 +201,8 @@ footer{border-top:1px solid var(--rule);padding:32px 0 48px;color:var(--ink-3);f
 .teaser{max-width:960px;margin:2.5rem auto 0;text-align:left}
 .teaser .note{font-size:.82rem;color:var(--ink-3);text-align:center;margin-top:10px}
 
-.compose{display:grid;grid-template-columns:1fr 28px 1fr 28px 1.25fr;align-items:center;gap:6px}
+.compose{display:grid;grid-template-columns:1fr 28px 1fr 28px 1fr;align-items:stretch;gap:6px}
+.compose .op{align-self:center}
 .op{font:600 1.5rem/1 "Source Serif 4",serif;color:var(--ink-3);text-align:center}
 
 .aside-note{font-size:.84rem;color:var(--ink-3);border-left:2px solid var(--rule);padding-left:12px;margin:0 0 1rem;max-width:720px}
@@ -216,7 +217,7 @@ footer{border-top:1px solid var(--rule);padding:32px 0 48px;color:var(--ink-3);f
   .grid3>.vid{flex:0 0 72%;scroll-snap-align:center}
   .compose{grid-template-columns:1fr 1fr;gap:10px}
   .compose .op{display:none}
-  .compose .vid:last-child{grid-column:1/-1}
+  .compose .vid:last-child{grid-column:1/-1;justify-self:center;width:calc(50% - 5px)}
   .vid figcaption{font-size:.78rem;padding:8px 10px 10px}
   .panels,.two,.eq-notes{grid-template-columns:1fr}
   .stats{grid-template-columns:1fr 1fr 1fr;gap:8px}
