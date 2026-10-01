@@ -1,6 +1,6 @@
 # Which Geometry Predicts Few-Step Degradation in Latent Flow Matching?
 
-Project page for the BeNTo @ NeurIPS 2026 workshop paper.
+Project page for the paper at the NeurIPS 2026 workshop [BeNTo: Beyond Next-Token Prediction — Diffusion & Flow Models for Next-Generation Decoding](https://bento-neurips.github.io/).
 
 - **Page:** https://azizkhadraoui.github.io/few-step-geometry/
 - **Paper & reviews:** [OpenReview](https://openreview.net/forum?id=K0bixbUbER)

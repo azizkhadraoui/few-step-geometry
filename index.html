@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Few-Step Geometry</title>
-<meta name="description" content="Which Geometry Predicts Few-Step Degradation in Latent Flow Matching? Only the integration-space geometry predicts few-step degradation; downstream maps contribute through local sensitivity. BeNTo @ NeurIPS 2026.">
+<meta name="description" content="Which Geometry Predicts Few-Step Degradation in Latent Flow Matching? Only the integration-space geometry predicts few-step degradation; downstream maps contribute through local sensitivity. BeNTo: Beyond Next-Token Prediction, NeurIPS 2026 Workshop.">
 <meta property="og:title" content="Which Geometry Predicts Few-Step Degradation in Latent Flow Matching?">
 <meta property="og:description" content="Only the integration-space geometry predicts few-step degradation. Downstream maps bend the trajectory but carry no signal — their local sensitivity does.">
 <meta property="og:type" content="website">
@@ -69,7 +69,9 @@ code,pre,.mono{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.86
 
 /* hero */
 .hero{padding-top:72px;padding-bottom:56px;text-align:center}
-.venue{display:inline-block;font:600 .8rem/1 Inter,sans-serif;color:var(--accent);background:var(--accent-soft);padding:.45rem .8rem;border-radius:999px;margin-bottom:1.5rem}
+.venue{display:inline-block;max-width:100%;font:600 .8rem/1.4 Inter,sans-serif;color:var(--accent);background:var(--accent-soft);padding:.45rem .9rem;border-radius:999px;margin-bottom:1.5rem;text-decoration:none;border:1px solid transparent}
+.venue:hover{border-color:var(--accent)}
+.venue .ext{display:inline-block;margin-left:4px;opacity:.7}
 .hero h1{font-size:clamp(2rem,5vw,3.1rem);margin:0 auto 1.25rem;max-width:18ch}
 .authors{color:var(--ink-2);margin-bottom:1.75rem}
 .authors .names{font-size:1.08rem;color:var(--ink);font-weight:500}
@@ -202,6 +204,7 @@ footer{border-top:1px solid var(--rule);padding:32px 0 48px;color:var(--ink-3);f
 .aside-note{font-size:.84rem;color:var(--ink-3);border-left:2px solid var(--rule);padding-left:12px;margin:0 0 1rem;max-width:720px}
 
 @media (max-width:760px){
+  .venue{border-radius:12px;font-size:.74rem}
   section{padding:48px 0}
   .grid3{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -16px;padding:0 16px 8px;scrollbar-width:none}
   .grid3::-webkit-scrollbar{display:none}
@@ -250,7 +253,7 @@ footer{border-top:1px solid var(--rule);padding:32px 0 48px;color:var(--ink-3);f
 <main>
 <!-- ============ HERO ============ -->
 <div class="wrap hero">
-  <div class="venue">BeNTo @ NeurIPS 2026 · Workshop on Diffusion &amp; Flow Models</div>
+  <a class="venue" href="https://bento-neurips.github.io/" target="_blank" rel="noopener">NeurIPS 2026 Workshop · BeNTo: Beyond Next-Token Prediction — Diffusion &amp; Flow Models for Next-Generation Decoding<span class="ext" aria-hidden="true">↗</span></a>
   <h1>Which Geometry Predicts Few-Step Degradation in Latent Flow Matching?</h1>
   <div class="authors">
     <div class="names">Mohamed Aziz Khadraoui<sup>1</sup> &nbsp;·&nbsp; Abdelkader Baggag<sup>2</sup></div>
@@ -646,7 +649,7 @@ export EVAL_N=512</code></pre>
   title     = {Which Geometry Predicts Few-Step Degradation in Latent Flow Matching?},
   author    = {Mohamed Aziz Khadraoui and Abdelkader Baggag},
   booktitle = {NeurIPS 2026 Workshop on Beyond Next-Token Prediction:
-               Diffusion and Flow Models (BeNTo)},
+               Diffusion \& Flow Models for Next-Generation Decoding (BeNTo)},
   year      = {2026}
 }</code></pre>
     </div>
