@@ -72,6 +72,9 @@ code,pre,.mono{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.86
 .venue{display:inline-block;font:600 .8rem/1 Inter,sans-serif;color:var(--accent);background:var(--accent-soft);padding:.45rem .8rem;border-radius:999px;margin-bottom:1.5rem}
 .hero h1{font-size:clamp(2rem,5vw,3.1rem);margin:0 auto 1.25rem;max-width:18ch}
 .authors{color:var(--ink-2);margin-bottom:1.75rem}
+.authors .names{font-size:1.08rem;color:var(--ink);font-weight:500}
+.authors .affils{font-size:.86rem;color:var(--ink-3);margin-top:.3rem}
+.authors sup{font-size:.68em;color:var(--ink-3);margin-left:1px}
 .buttons{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
 .btn{display:inline-flex;align-items:center;gap:8px;padding:.6rem 1.05rem;border-radius:10px;background:var(--ink);color:var(--bg);text-decoration:none;font-weight:500;font-size:.925rem;border:1px solid var(--ink)}
 .btn.ghost{background:transparent;color:var(--ink);border-color:var(--rule)}
@@ -249,7 +252,10 @@ footer{border-top:1px solid var(--rule);padding:32px 0 48px;color:var(--ink-3);f
 <div class="wrap hero">
   <div class="venue">BeNTo @ NeurIPS 2026 · Workshop on Diffusion &amp; Flow Models</div>
   <h1>Which Geometry Predicts Few-Step Degradation in Latent Flow Matching?</h1>
-  <div class="authors">Anonymous Authors</div>
+  <div class="authors">
+    <div class="names">Mohamed Aziz Badri Khadraoui<sup>1</sup> &nbsp;·&nbsp; Abdelkader Baggag<sup>2</sup></div>
+    <div class="affils"><sup>1</sup>Tunis, Tunisia &nbsp;&nbsp; <sup>2</sup>Qatar Computing Research Institute, Hamad Bin Khalifa University</div>
+  </div>
   <div class="buttons">
     <a class="btn" href="https://openreview.net/pdf?id=K0bixbUbER" target="_blank" rel="noopener">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>Paper</a>
@@ -341,7 +347,7 @@ footer{border-top:1px solid var(--rule);padding:32px 0 48px;color:var(--ink-3);f
       <div class="eq-note b"><b>Stability &amp; 2nd-order variation</b>Both are properties of the integration space 𝒮.</div>
       <div class="eq-note c"><b>Bending of the mapped path</b>Does not appear anywhere in the bound.</div>
     </div>
-    <p class="muted small" style="margin-top:1rem">This is a textbook result, used only qualitatively. The
+    <p class="muted small" style="margin-top:1rem">The
     measurements below decide which of these quantities actually matter.</p>
   </div>
 </section>
@@ -636,9 +642,9 @@ export EVAL_N=512</code></pre>
     <h2>BibTeX</h2>
     <div class="bib">
       <button class="copy" id="copyBib">Copy</button>
-<pre id="bibtex"><code>@inproceedings{anon2026geometry,
+<pre id="bibtex"><code>@inproceedings{khadraoui2026geometry,
   title     = {Which Geometry Predicts Few-Step Degradation in Latent Flow Matching?},
-  author    = {Anonymous},
+  author    = {Mohamed Aziz Badri Khadraoui and Abdelkader Baggag},
   booktitle = {NeurIPS 2026 Workshop on Beyond Next-Token Prediction:
                Diffusion and Flow Models (BeNTo)},
   year      = {2026}
