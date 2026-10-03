@@ -206,7 +206,21 @@ footer{border-top:1px solid var(--rule);padding:32px 0 48px;color:var(--ink-3);f
 
 .aside-note{font-size:.84rem;color:var(--ink-3);border-left:2px solid var(--rule);padding-left:12px;margin:0 0 1rem;max-width:720px}
 
+.notes{display:grid;gap:14px;margin-top:1.5rem}
+.note{display:grid;grid-template-columns:36px 1fr;gap:14px;background:var(--surface);border:1px solid var(--rule);border-radius:14px;padding:18px 20px;box-shadow:var(--shadow)}
+.note-n{font:700 1rem/1 "Source Serif 4",serif;color:var(--accent);border:1.5px solid var(--accent);width:32px;height:32px;border-radius:50%;display:grid;place-items:center}
+.note-b{min-width:0}
+.note-b h3{margin:.2rem 0 .5rem;font-size:1.15rem}
+.note-b p{max-width:760px}
+.note-b .tbl-wrap{margin:.25rem 0 .75rem}
+.tbl td.n small{color:var(--ink-3);font-size:.85em;margin-left:2px}
+.kvlist{display:grid;grid-template-columns:130px 1fr;gap:10px 16px;margin:0 0 .75rem}
+.kvlist dt{font-weight:600;color:var(--ink)}
+.kvlist dd{margin:0;color:var(--ink-2);max-width:700px}
 @media (max-width:760px){
+  .note{grid-template-columns:1fr;padding:16px}
+  .kvlist{grid-template-columns:1fr;gap:2px}
+  .kvlist dd{margin-bottom:10px}
   .authors .affils span{display:block;margin:0}
   .venue{padding:.65rem 1rem}
   .venue .v1{font-size:.98rem}
@@ -247,6 +261,7 @@ footer{border-top:1px solid var(--rule);padding:32px 0 48px;color:var(--ink-3);f
       <a href="#reflow">Reflow</a>
       <a href="#demos">Demo</a>
       <a href="#reproduce">Reproduce</a>
+      <a href="#notes">Notes</a>
       <a href="#caveats">Caveats</a>
       <a href="#citation">Cite</a>
     </nav>
@@ -617,9 +632,96 @@ CV_REPS=5 EVAL_N=512 python curvature_nfe_v2.py</code></pre>
     <details><summary>Two levels of averaging</summary><div class="inner">Statistics are computed per clip and reduced to one value
       per replication (a mean, or a Spearman coefficient across the 512 clips). Intervals are then taken across replications,
       so they measure <em>sampling</em> variance. Dispersion across clips is reported separately.</div></details>
-    <details><summary>Dataset split</summary><div class="inner">We use 13,840 train and 2,644 test clips (our copy did not materialise
-      the mirrored <code>M</code>-prefixed entries). FID is biased upward at smaller sample sizes, so our <b>absolute values are
-      not comparable to published leaderboards</b>. Every claim in the paper compares treatments under one fixed protocol.</div></details>
+  </div>
+</section>
+
+<!-- ============ NOTES ============ -->
+<section id="notes">
+  <div class="wrap">
+    <div class="eyebrow">Camera-ready</div>
+    <h2>Additional Reproducibility and Clarification Notes</h2>
+    <p class="prose muted">Precise statistical and reproducibility details that complement the final paper. They do not
+    change any of its claims.</p>
+
+    <div class="notes">
+      <div class="note">
+        <div class="note-n">1</div>
+        <div class="note-b">
+          <h3>Dataset preprocessing</h3>
+          <p>Our HumanML3D preprocessing contains <b>13,840 training motions</b> and <b>2,644 test motions</b>. The mirrored
+          <code>M</code>-prefixed entries are not materialized. Absolute FID values should therefore not be compared
+          directly with published HumanML3D leaderboard values. All comparisons in the paper use the same fixed
+          preprocessing and evaluation protocol.</p>
+        </div>
+      </div>
+
+      <div class="note">
+        <div class="note-n">2</div>
+        <div class="note-b">
+          <h3>𝒬-space association for LFM</h3>
+          <p>For LFM, the 𝒬-space arc-to-chord associations with few-step degradation are <b>small in magnitude and
+          negative</b>, ranging from −0.091 to −0.024. Only the sixteen-step interval spans zero. This is the precise
+          interpretation of the result.</p>
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead><tr><th>Steps</th><th>1</th><th>2</th><th>4</th><th>8</th><th>16</th></tr></thead>
+              <tbody>
+                <tr><td>Spearman ρ</td><td class="n">−0.055</td><td class="n">−0.074</td><td class="n">−0.091</td><td class="n">−0.061</td><td class="n">−0.024</td></tr>
+                <tr><td>95% interval</td><td class="n">±0.021</td><td class="n">±0.016</td><td class="n">±0.032</td><td class="n">±0.043</td><td class="n best">±0.041</td></tr>
+                <tr><td>Spans zero</td><td class="n">no</td><td class="n">no</td><td class="n">no</td><td class="n">no</td><td class="n best">yes</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="note">
+        <div class="note-n">3</div>
+        <div class="note-b">
+          <h3>Gain evaluation choice</h3>
+          <p>The gain can be evaluated in four ways: at the terminal state, averaged along the trajectory, as the
+          trajectory maximum, or at the endpoint-segment midpoint. Against integration-space degradation
+          δ<sub>int</sub>, the <b>trajectory-mean gain has the highest point estimate of the four at every budget</b>,
+          for both models. Its interval overlaps that of the trajectory-maximum variant at every LFM budget and at
+          2–16 steps for CDFM, so the ordering between those two variants is descriptive.</p>
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead><tr><th>Model</th><th class="l">Gain evaluation</th><th>1</th><th>2</th><th>4</th><th>8</th><th>16</th></tr></thead>
+              <tbody>
+                <tr><td>LFM</td><td class="l">Trajectory mean</td><td class="n best">0.591<small>±0.018</small></td><td class="n best">0.606<small>±0.013</small></td><td class="n best">0.595<small>±0.010</small></td><td class="n best">0.564<small>±0.017</small></td><td class="n best">0.547<small>±0.021</small></td></tr>
+                <tr><td></td><td class="l">Trajectory maximum</td><td class="n">0.584<small>±0.027</small></td><td class="n">0.594<small>±0.022</small></td><td class="n">0.576<small>±0.014</small></td><td class="n">0.544<small>±0.016</small></td><td class="n">0.528<small>±0.022</small></td></tr>
+                <tr><td>CDFM</td><td class="l">Trajectory mean</td><td class="n best">0.547<small>±0.011</small></td><td class="n best">0.561<small>±0.013</small></td><td class="n best">0.533<small>±0.018</small></td><td class="n best">0.483<small>±0.020</small></td><td class="n best">0.468<small>±0.018</small></td></tr>
+                <tr><td></td><td class="l">Trajectory maximum</td><td class="n">0.523<small>±0.009</small></td><td class="n">0.538<small>±0.011</small></td><td class="n">0.510<small>±0.016</small></td><td class="n">0.459<small>±0.020</small></td><td class="n">0.444<small>±0.020</small></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">The terminal-state and endpoint-segment-midpoint variants are lower at every budget. The
+          full table is in the paper's appendix.</p>
+        </div>
+      </div>
+
+      <div class="note">
+        <div class="note-n">4</div>
+        <div class="note-b">
+          <h3>Implementation details</h3>
+          <dl class="kvlist">
+            <dt>Text encoder</dt>
+            <dd>Frozen <code>sentence-transformers/sentence-t5-base</code> (T5 encoder, 768-d). Captions are padded or
+            truncated to 64 tokens. Both flow models are conditioned on the token-level hidden states and on their
+            masked mean-pooled, L2-normalized embedding. Classifier-free guidance uses a learned null embedding, with
+            conditioning dropped 10% of the time during training.</dd>
+            <dt>Autoencoder</dt>
+            <dd>Frozen 1-D convolutional autoencoder with GroupNorm and SiLU. The encoder maps the 263-d motion features
+            through 256 → 512 → 256 channels with 4× temporal downsampling, so a 196-frame clip becomes a 49 × 256
+            continuous latent. The decoder mirrors it with nearest-neighbour upsampling. The residual quantizer stored in
+            the checkpoint is bypassed: the flow acts on continuous codes, standardized per channel with training-set
+            statistics.</dd>
+          </dl>
+          <p class="small muted">The autoencoder is used frozen throughout; its architecture is defined in
+          <a href="https://github.com/azizkhadraoui/few-step-geometry-code/blob/main/lfm_clfm_cdfm_experiment.py">lfm_clfm_cdfm_experiment.py</a>.</p>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
