@@ -256,7 +256,7 @@ footer{border-top:1px solid var(--rule);padding:32px 0 48px;color:var(--ink-3);f
   <div class="wrap">
     <nav aria-label="Sections">
       <a href="#setup">Setup</a>
-      <a href="#bound">The bound</a>
+      <a href="#bound">Theory</a>
       <a href="#results">Results</a>
       <a href="#reflow">Reflow</a>
       <a href="#demos">Demo</a>
@@ -366,11 +366,19 @@ footer{border-top:1px solid var(--rule);padding:32px 0 48px;color:var(--ink-3);f
       mapped error, and in which space each one is defined:</p>
     </div>
     <div class="eq">
-      $$\bigl\lVert F(\hat S_1^{(n)}) - F(S_1)\bigr\rVert_{\mathcal Q} \;\le\; \underbrace{L_F^{(n)}}_{\text{sensitivity}} \cdot \frac{\Delta t}{2}\cdot\underbrace{\frac{e^{L_v}-1}{L_v}}_{\text{stability}}\cdot \underbrace{\sup_t \lVert \ddot S_t\rVert_{\mathcal S}}_{\text{2nd-order variation}}$$
+      $$\bigl\|\mathcal F^{(m)}(\widehat{\boldsymbol S}_1^{(m,n_{\mathrm{steps}})}) - \mathcal F^{(m)}(\boldsymbol S_1^{(m)})\bigr\|_{\mathcal Q} \;\le\; \underbrace{L_{\mathcal F}^{(m,n_{\mathrm{steps}})}}_{\text{sensitivity}}\,\frac{\Delta t}{2}\,\underbrace{\frac{e^{L_v^{(m)}}-1}{L_v^{(m)}}}_{\text{stability}}\,\underbrace{\sup_{t\in[0,1]}\bigl\|\ddot{\boldsymbol S}_t^{(m)}\bigr\|_{\mathcal S}}_{\text{2nd-order variation}}$$
     </div>
+    <p class="muted small prose">Here \(m\in\{\mathrm{LFM},\mathrm{CDFM}\}\) indexes the model, \(\boldsymbol S_t^{(m)}\) is the
+    trajectory in the integration space \(\mathcal S\) (\(\mathcal S^{(\mathrm{LFM})}=\mathcal Z\),
+    \(\mathcal S^{(\mathrm{CDFM})}=\mathcal X\)), and \(\widehat{\boldsymbol S}_1^{(m,n_{\mathrm{steps}})}\) is the
+    \(n_{\mathrm{steps}}\)-step Euler endpoint. The output map is
+    \(\mathcal F^{(\mathrm{LFM})}=\mathcal K\circ\mathcal D_\varphi\) and \(\mathcal F^{(\mathrm{CDFM})}=\mathcal K\).
+    \(L_v^{(m)}\) is the Lipschitz constant of the learned field \(v_\theta^{(m)}\), and
+    \(L_{\mathcal F}^{(m,n_{\mathrm{steps}})}\) is the supremum of the local output-map operator norm over the segment
+    joining the exact and Euler endpoints.</p>
     <div class="eq-notes">
       <div class="eq-note a"><b>Output-map sensitivity</b>The only way the downstream map enters.</div>
-      <div class="eq-note b"><b>Stability &amp; 2nd-order variation</b>Both are properties of the integration space 𝒮.</div>
+      <div class="eq-note b"><b>Stability &amp; 2nd-order variation</b>Both are properties of the integration space \(\mathcal S\).</div>
       <div class="eq-note c"><b>Bending of the mapped path</b>Does not appear anywhere in the bound.</div>
     </div>
     <p class="muted small" style="margin-top:1rem">The
